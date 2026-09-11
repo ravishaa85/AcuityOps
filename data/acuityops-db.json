@@ -1,0 +1,1039 @@
+{
+  "wards": [
+    {
+      "id": "w-b7",
+      "code": "B7",
+      "name": "Orthopedic & Trauma Care",
+      "floor": "7th Floor",
+      "bedCapacity": 24,
+      "departmentType": "General",
+      "targetUtilization": 85,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-c5e",
+      "code": "C5E",
+      "name": "Oncology High Dependency Unit",
+      "floor": "5th Floor",
+      "bedCapacity": 20,
+      "departmentType": "Step-down",
+      "targetUtilization": 85,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-c5w",
+      "code": "C5W",
+      "name": "Neurology & Stroke Unit",
+      "floor": "5th Floor",
+      "bedCapacity": 22,
+      "departmentType": "General",
+      "targetUtilization": 85,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-b6",
+      "code": "B6",
+      "name": "General Surgery & Post-Op",
+      "floor": "6th Floor",
+      "bedCapacity": 20,
+      "departmentType": "Surgical",
+      "targetUtilization": 85,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-c6w",
+      "code": "C6W",
+      "name": "Cardiology Step-down",
+      "floor": "6th Floor",
+      "bedCapacity": 18,
+      "departmentType": "Step-down",
+      "targetUtilization": 85,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-b10",
+      "code": "B10",
+      "name": "Pulmonology & Respiratory Care",
+      "floor": "10th Floor",
+      "bedCapacity": 20,
+      "departmentType": "General",
+      "targetUtilization": 85,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-b5",
+      "code": "B5",
+      "name": "Nephrology & Dialysis Care",
+      "floor": "5th Floor",
+      "bedCapacity": 18,
+      "departmentType": "General",
+      "targetUtilization": 85,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-b8",
+      "code": "B8",
+      "name": "Internal Medicine Suite",
+      "floor": "8th Floor",
+      "bedCapacity": 25,
+      "departmentType": "General",
+      "targetUtilization": 85,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-b4",
+      "code": "B4",
+      "name": "Medical Intensive Care Unit (MICU)",
+      "floor": "4th Floor",
+      "bedCapacity": 16,
+      "departmentType": "ICU",
+      "targetUtilization": 80,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-c6e",
+      "code": "C6E",
+      "name": "Cardiothoracic ICU (CTICU)",
+      "floor": "6th Floor",
+      "bedCapacity": 14,
+      "departmentType": "ICU",
+      "targetUtilization": 80,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-c8e",
+      "code": "C8E",
+      "name": "Executive General Deluxe Ward",
+      "floor": "8th Floor",
+      "bedCapacity": 16,
+      "departmentType": "General",
+      "targetUtilization": 80,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-nicu",
+      "code": "NICU",
+      "name": "Neonatal Intensive Care",
+      "floor": "3rd Floor",
+      "bedCapacity": 18,
+      "departmentType": "Pediatric",
+      "targetUtilization": 80,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    },
+    {
+      "id": "w-picu",
+      "code": "PICU",
+      "name": "Pediatric Intensive Care",
+      "floor": "3rd Floor",
+      "bedCapacity": 12,
+      "departmentType": "Pediatric",
+      "targetUtilization": 80,
+      "isActive": true,
+      "createdAt": "2024-01-01"
+    }
+  ],
+  "nurses": [
+    {
+      "id": "n-101",
+      "employeeId": "NUR-0101",
+      "name": "Sr. Ananya Nair",
+      "competency": "Competent",
+      "wardId": "w-b7",
+      "contactNumber": "+91 98471 23401",
+      "email": "ananya.n@simshospitals.com",
+      "experienceYears": 3.5,
+      "maxAcuityCapacity": 10,
+      "status": "Active",
+      "shiftPreference": "Morning",
+      "createdAt": "2023-03-15"
+    },
+    {
+      "id": "n-102",
+      "employeeId": "NUR-0102",
+      "name": "Staff Reshma V",
+      "competency": "Advanced Beginner",
+      "wardId": "w-b7",
+      "contactNumber": "+91 98471 23402",
+      "email": "reshma.v@simshospitals.com",
+      "experienceYears": 1.5,
+      "maxAcuityCapacity": 7,
+      "status": "Active",
+      "shiftPreference": "Morning",
+      "createdAt": "2023-08-10"
+    },
+    {
+      "id": "n-103",
+      "employeeId": "NUR-0103",
+      "name": "Staff Rahul George",
+      "competency": "Advanced Beginner",
+      "wardId": "w-b7",
+      "contactNumber": "+91 98471 23403",
+      "email": "rahul.g@simshospitals.com",
+      "experienceYears": 1.8,
+      "maxAcuityCapacity": 7,
+      "status": "Active",
+      "shiftPreference": "Evening",
+      "createdAt": "2023-06-20"
+    },
+    {
+      "id": "n-104",
+      "employeeId": "NUR-0104",
+      "name": "Staff Nimisha Paul",
+      "competency": "Advanced Beginner",
+      "wardId": "w-b7",
+      "contactNumber": "+91 98471 23404",
+      "email": "nimisha.p@simshospitals.com",
+      "experienceYears": 1.2,
+      "maxAcuityCapacity": 7,
+      "status": "Active",
+      "shiftPreference": "Night",
+      "createdAt": "2024-01-10"
+    },
+    {
+      "id": "n-201",
+      "employeeId": "NUR-0201",
+      "name": "Sr. Soniya K.P.",
+      "competency": "Expert",
+      "wardId": "w-c5e",
+      "contactNumber": "+91 98471 23411",
+      "email": "soniya.kp@simshospitals.com",
+      "experienceYears": 9,
+      "maxAcuityCapacity": 20,
+      "status": "Active",
+      "shiftPreference": "Morning",
+      "createdAt": "2021-02-12"
+    },
+    {
+      "id": "n-202",
+      "employeeId": "NUR-0202",
+      "name": "Sr. Blessey Thomas",
+      "competency": "Expert",
+      "wardId": "w-c5e",
+      "contactNumber": "+91 98471 23412",
+      "email": "blessey.t@simshospitals.com",
+      "experienceYears": 8.5,
+      "maxAcuityCapacity": 20,
+      "status": "Active",
+      "shiftPreference": "Evening",
+      "createdAt": "2021-05-18"
+    },
+    {
+      "id": "n-301",
+      "employeeId": "NUR-0301",
+      "name": "Sr. Deepthi Mathew",
+      "competency": "Expert",
+      "wardId": "w-c5w",
+      "contactNumber": "+91 98471 23421",
+      "email": "deepthi.m@simshospitals.com",
+      "experienceYears": 10,
+      "maxAcuityCapacity": 20,
+      "status": "Active",
+      "shiftPreference": "Morning",
+      "createdAt": "2020-04-10"
+    },
+    {
+      "id": "n-302",
+      "employeeId": "NUR-0302",
+      "name": "Sr. Priya Varma",
+      "competency": "Expert",
+      "wardId": "w-c5w",
+      "contactNumber": "+91 98471 23422",
+      "email": "priya.v@simshospitals.com",
+      "experienceYears": 7.5,
+      "maxAcuityCapacity": 20,
+      "status": "Active",
+      "shiftPreference": "Night",
+      "createdAt": "2022-01-15"
+    },
+    {
+      "id": "n-303",
+      "employeeId": "NUR-0303",
+      "name": "Staff Akhil Das",
+      "competency": "Advanced Beginner",
+      "wardId": "w-c5w",
+      "contactNumber": "+91 98471 23423",
+      "email": "akhil.d@simshospitals.com",
+      "experienceYears": 1.4,
+      "maxAcuityCapacity": 7,
+      "status": "Active",
+      "shiftPreference": "Evening",
+      "createdAt": "2023-11-01"
+    },
+    {
+      "id": "n-401",
+      "employeeId": "NUR-0401",
+      "name": "Sr. Sunitha S",
+      "competency": "Expert",
+      "wardId": "w-b6",
+      "contactNumber": "+91 98471 23431",
+      "email": "sunitha.s@simshospitals.com",
+      "experienceYears": 8,
+      "maxAcuityCapacity": 20,
+      "status": "Active",
+      "shiftPreference": "Morning",
+      "createdAt": "2021-08-01"
+    },
+    {
+      "id": "n-402",
+      "employeeId": "NUR-0402",
+      "name": "Staff Aswathi R",
+      "competency": "Advanced Beginner",
+      "wardId": "w-b6",
+      "contactNumber": "+91 98471 23432",
+      "email": "aswathi.r@simshospitals.com",
+      "experienceYears": 1.9,
+      "maxAcuityCapacity": 7,
+      "status": "Active",
+      "shiftPreference": "Evening",
+      "createdAt": "2023-09-12"
+    },
+    {
+      "id": "n-501",
+      "employeeId": "NUR-0501",
+      "name": "Sr. Merlin Baby",
+      "competency": "Proficient",
+      "wardId": "w-c6w",
+      "contactNumber": "+91 98471 23441",
+      "email": "merlin.b@simshospitals.com",
+      "experienceYears": 5.5,
+      "maxAcuityCapacity": 15,
+      "status": "Active",
+      "shiftPreference": "Morning",
+      "createdAt": "2022-03-01"
+    },
+    {
+      "id": "n-502",
+      "employeeId": "NUR-0502",
+      "name": "Sr. Sharon Joseph",
+      "competency": "Expert",
+      "wardId": "w-c6w",
+      "contactNumber": "+91 98471 23442",
+      "email": "sharon.j@simshospitals.com",
+      "experienceYears": 9.2,
+      "maxAcuityCapacity": 20,
+      "status": "Active",
+      "shiftPreference": "Evening",
+      "createdAt": "2020-09-15"
+    },
+    {
+      "id": "n-601",
+      "employeeId": "NUR-0601",
+      "name": "Sr. Jincy Philip",
+      "competency": "Expert",
+      "wardId": "w-b4",
+      "contactNumber": "+91 98471 23451",
+      "email": "jincy.p@simshospitals.com",
+      "experienceYears": 11,
+      "maxAcuityCapacity": 20,
+      "status": "Active",
+      "shiftPreference": "Morning",
+      "createdAt": "2019-11-20"
+    },
+    {
+      "id": "n-602",
+      "employeeId": "NUR-0602",
+      "name": "Sr. Rekha Menon",
+      "competency": "Proficient",
+      "wardId": "w-b4",
+      "contactNumber": "+91 98471 23452",
+      "email": "rekha.m@simshospitals.com",
+      "experienceYears": 6,
+      "maxAcuityCapacity": 15,
+      "status": "Active",
+      "shiftPreference": "Night",
+      "createdAt": "2022-04-10"
+    },
+    {
+      "id": "n-701",
+      "employeeId": "NUR-0701",
+      "name": "Sr. Sujatha Nair",
+      "competency": "Expert",
+      "wardId": "w-c8e",
+      "contactNumber": "+91 98471 23461",
+      "email": "sujatha.n@simshospitals.com",
+      "experienceYears": 12,
+      "maxAcuityCapacity": 20,
+      "status": "Active",
+      "shiftPreference": "Flexible",
+      "createdAt": "2018-05-15"
+    },
+    {
+      "id": "n-702",
+      "employeeId": "NUR-0702",
+      "name": "Sr. Geethu Rajan",
+      "competency": "Expert",
+      "wardId": "w-c8e",
+      "contactNumber": "+91 98471 23462",
+      "email": "geethu.r@simshospitals.com",
+      "experienceYears": 8.8,
+      "maxAcuityCapacity": 20,
+      "status": "Active",
+      "shiftPreference": "Morning",
+      "createdAt": "2021-06-01"
+    },
+    {
+      "id": "n-703",
+      "employeeId": "NUR-0703",
+      "name": "Sr. Remya Mohan",
+      "competency": "Proficient",
+      "wardId": "w-c8e",
+      "contactNumber": "+91 98471 23463",
+      "email": "remya.m@simshospitals.com",
+      "experienceYears": 5,
+      "maxAcuityCapacity": 15,
+      "status": "Active",
+      "shiftPreference": "Evening",
+      "createdAt": "2022-10-01"
+    },
+    {
+      "id": "n-801",
+      "employeeId": "NUR-0801",
+      "name": "Sr. Kavitha Pillai",
+      "competency": "Proficient",
+      "wardId": "w-nicu",
+      "contactNumber": "+91 98471 23471",
+      "email": "kavitha.p@simshospitals.com",
+      "experienceYears": 6.2,
+      "maxAcuityCapacity": 15,
+      "status": "Active",
+      "shiftPreference": "Morning",
+      "createdAt": "2022-02-14"
+    },
+    {
+      "id": "n-802",
+      "employeeId": "NUR-0802",
+      "name": "Sr. Mary Grace",
+      "competency": "Expert",
+      "wardId": "w-picu",
+      "contactNumber": "+91 98471 23472",
+      "email": "mary.g@simshospitals.com",
+      "experienceYears": 10.5,
+      "maxAcuityCapacity": 20,
+      "status": "Active",
+      "shiftPreference": "Morning",
+      "createdAt": "2020-01-20"
+    },
+    {
+      "id": "n-803",
+      "employeeId": "NUR-0803",
+      "name": "Sr. Divya Krishna",
+      "competency": "Proficient",
+      "wardId": "w-picu",
+      "contactNumber": "+91 98471 23473",
+      "email": "divya.k@simshospitals.com",
+      "experienceYears": 5.8,
+      "maxAcuityCapacity": 15,
+      "status": "Active",
+      "shiftPreference": "Flexible",
+      "createdAt": "2022-07-15"
+    }
+  ],
+  "patients": [
+    {
+      "id": "p-1",
+      "uhid": "SIMS-2024-8841",
+      "admissionNumber": "IP-7804",
+      "name": "Mohammed Haneef",
+      "age": 62,
+      "gender": "Male",
+      "roomBed": "7804-A",
+      "doctorName": "Dr. K. Rajagopal",
+      "wardId": "w-b7",
+      "admissionDate": "2024-10-06",
+      "diagnosis": "Post-op Total Hip Replacement, Type 2 Diabetes",
+      "currentAcuityScore": 6,
+      "currentAcuityCategory": 2,
+      "lastAcuityUpdate": "12:30 pm, 10/09/2026",
+      "currentShiftStaff": {
+        "nurseId": "n-102",
+        "nurseName": "Staff Reshma V",
+        "competency": "Advanced Beginner"
+      },
+      "nextShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      }
+    },
+    {
+      "id": "p-2",
+      "uhid": "SIMS-2024-8842",
+      "admissionNumber": "IP-7825",
+      "name": "Savitri Amma",
+      "age": 74,
+      "gender": "Female",
+      "roomBed": "7825-B",
+      "doctorName": "Dr. Suresh Babu",
+      "wardId": "w-b7",
+      "admissionDate": "2024-10-07",
+      "diagnosis": "Polytrauma, Pelvic Fracture, High Fall Risk",
+      "currentAcuityScore": 4,
+      "currentAcuityCategory": 4,
+      "lastAcuityUpdate": "11:46 AM, 10-10-2024",
+      "currentShiftStaff": {
+        "nurseId": "n-101",
+        "nurseName": "Sr. Ananya Nair",
+        "competency": "Competent"
+      },
+      "nextShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      }
+    },
+    {
+      "id": "p-3",
+      "uhid": "SIMS-2024-8843",
+      "admissionNumber": "IP-7807",
+      "name": "Varghese Kurian",
+      "age": 58,
+      "gender": "Male",
+      "roomBed": "7807",
+      "doctorName": "Dr. Manoj Kumar",
+      "wardId": "w-b7",
+      "admissionDate": "2024-10-08",
+      "diagnosis": "Cervical Spine Fixation, Neuro Monitoring Required",
+      "currentAcuityScore": 4,
+      "currentAcuityCategory": 4,
+      "lastAcuityUpdate": "11:46 AM, 10-10-2024",
+      "currentShiftStaff": {
+        "nurseId": "n-102",
+        "nurseName": "Staff Reshma V",
+        "competency": "Advanced Beginner"
+      },
+      "nextShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      }
+    },
+    {
+      "id": "p-4",
+      "uhid": "SIMS-2024-8844",
+      "admissionNumber": "IP-7820",
+      "name": "Deepa Nambiar",
+      "age": 45,
+      "gender": "Female",
+      "roomBed": "7820",
+      "doctorName": "Dr. Sunita Rao",
+      "wardId": "w-b7",
+      "admissionDate": "2024-10-08",
+      "diagnosis": "Compound Tibial Fracture with External Fixator",
+      "currentAcuityScore": 3,
+      "currentAcuityCategory": 3,
+      "lastAcuityUpdate": "11:46 AM, 10-10-2024",
+      "currentShiftStaff": {
+        "nurseId": "n-102",
+        "nurseName": "Staff Reshma V",
+        "competency": "Advanced Beginner"
+      },
+      "nextShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      }
+    },
+    {
+      "id": "p-5",
+      "uhid": "SIMS-2024-8845",
+      "admissionNumber": "IP-7815",
+      "name": "Abdul Rasheed",
+      "age": 69,
+      "gender": "Male",
+      "roomBed": "7815-A",
+      "doctorName": "Dr. K. Rajagopal",
+      "wardId": "w-b7",
+      "admissionDate": "2024-10-09",
+      "diagnosis": "Compartment Syndrome post crush injury",
+      "currentAcuityScore": 3,
+      "currentAcuityCategory": 3,
+      "lastAcuityUpdate": "11:46 AM, 10-10-2024",
+      "currentShiftStaff": {
+        "nurseId": "n-101",
+        "nurseName": "Sr. Ananya Nair",
+        "competency": "Competent"
+      },
+      "nextShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      }
+    },
+    {
+      "id": "p-6",
+      "uhid": "SIMS-2024-8846",
+      "admissionNumber": "IP-7816",
+      "name": "Fathima Beevi",
+      "age": 52,
+      "gender": "Female",
+      "roomBed": "7816-B",
+      "doctorName": "Dr. Suresh Babu",
+      "wardId": "w-b7",
+      "admissionDate": "2024-10-09",
+      "diagnosis": "Lumbar Laminectomy, PCA Pump for pain control",
+      "currentAcuityScore": 2,
+      "currentAcuityCategory": 2,
+      "lastAcuityUpdate": "11:46 AM, 10-10-2024",
+      "currentShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      },
+      "nextShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      }
+    },
+    {
+      "id": "p-7",
+      "uhid": "SIMS-2024-8847",
+      "admissionNumber": "IP-7819",
+      "name": "K. Unnikrishnan",
+      "age": 60,
+      "gender": "Male",
+      "roomBed": "7819",
+      "doctorName": "Dr. Manoj Kumar",
+      "wardId": "w-b7",
+      "admissionDate": "2024-10-09",
+      "diagnosis": "Knee Arthroplasty with drainage monitor",
+      "currentAcuityScore": 3,
+      "currentAcuityCategory": 3,
+      "lastAcuityUpdate": "11:46 AM, 10-10-2024",
+      "currentShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      },
+      "nextShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      }
+    },
+    {
+      "id": "p-8",
+      "uhid": "SIMS-2024-8848",
+      "admissionNumber": "IP-7821",
+      "name": "Radhika S",
+      "age": 38,
+      "gender": "Female",
+      "roomBed": "7821",
+      "doctorName": "Dr. Sunita Rao",
+      "wardId": "w-b7",
+      "admissionDate": "2024-10-10",
+      "diagnosis": "Closed Radius Fracture Reduction, Stable",
+      "currentAcuityScore": 1,
+      "currentAcuityCategory": 1,
+      "lastAcuityUpdate": "11:46 AM, 10-10-2024",
+      "currentShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      },
+      "nextShiftStaff": {
+        "nurseId": "n-103",
+        "nurseName": "Staff Rahul George",
+        "competency": "Advanced Beginner"
+      }
+    },
+    {
+      "id": "p-9",
+      "uhid": "SIMS-2024-8851",
+      "admissionNumber": "IP-5011",
+      "name": "Thomas Joseph",
+      "age": 55,
+      "gender": "Male",
+      "roomBed": "5011",
+      "doctorName": "Dr. Harish Kumar",
+      "wardId": "w-c5e",
+      "admissionDate": "2024-10-05",
+      "diagnosis": "Acute Myeloid Leukemia, Neutropenic Sepsis Protocol",
+      "currentAcuityScore": 4,
+      "currentAcuityCategory": 4,
+      "lastAcuityUpdate": "10:15 AM, 10-10-2024",
+      "currentShiftStaff": {
+        "nurseId": "n-201",
+        "nurseName": "Sr. Soniya K.P.",
+        "competency": "Expert"
+      },
+      "nextShiftStaff": null
+    },
+    {
+      "id": "p-10",
+      "uhid": "SIMS-2024-8852",
+      "admissionNumber": "IP-5012",
+      "name": "Lathika Pillai",
+      "age": 63,
+      "gender": "Female",
+      "roomBed": "5012",
+      "doctorName": "Dr. Harish Kumar",
+      "wardId": "w-c5e",
+      "admissionDate": "2024-10-07",
+      "diagnosis": "Metastatic Colorectal Ca, Continuous Chemotherapy Infusion",
+      "currentAcuityScore": 3,
+      "currentAcuityCategory": 3,
+      "lastAcuityUpdate": "10:30 AM, 10-10-2024",
+      "currentShiftStaff": {
+        "nurseId": "n-202",
+        "nurseName": "Sr. Blessey Thomas",
+        "competency": "Expert"
+      },
+      "nextShiftStaff": null
+    }
+  ],
+  "templates": [
+    {
+      "id": "tmpl-v1",
+      "version": 2,
+      "title": "SIMS Clinical Acuity Assessment Tool (NABH COP-6 / NCP-4)",
+      "fields": [
+        {
+          "id": "f-characteristics",
+          "title": "Does the patient have any of the following characteristics?",
+          "options": [
+            {
+              "id": "o-none",
+              "label": "None",
+              "score": 0
+            },
+            {
+              "id": "o-oxygen",
+              "label": "Oxygen Flow (Nasal Cannula / Simple Face Mask)",
+              "score": 1
+            },
+            {
+              "id": "o-bipap",
+              "label": "BIPAP or High Flow Mask",
+              "score": 2
+            },
+            {
+              "id": "o-tracheo",
+              "label": "Tracheostomy / Ostomy Care / High Risk Medication Infusions",
+              "score": 3
+            },
+            {
+              "id": "o-paralysed",
+              "label": "Paralysed / High Dependency Care / Total Bed Rest",
+              "score": 4
+            }
+          ]
+        },
+        {
+          "id": "f-vitals",
+          "title": "Vitals Condition",
+          "options": [
+            {
+              "id": "v-stable",
+              "label": "Stable",
+              "score": 0
+            },
+            {
+              "id": "v-mild",
+              "label": "Variation in BP, Temp, HR, SpO2, Resp Assistance (NC/Mask) MILD",
+              "score": 1
+            },
+            {
+              "id": "v-mod",
+              "label": "Variation in BP, Temp, HR, SpO2, Resp Assistance (Tracheostomy, BIPAP) MODERATE",
+              "score": 2
+            },
+            {
+              "id": "v-sev",
+              "label": "Variation in BP, Temp, HR, SpO2, Resp Assistance (Ventilator) SEVERE",
+              "score": 3
+            }
+          ]
+        },
+        {
+          "id": "f-mental",
+          "title": "Mental Status",
+          "options": [
+            {
+              "id": "m-alert",
+              "label": "Alert, Oriented",
+              "score": 0
+            },
+            {
+              "id": "m-mild",
+              "label": "CIWA-Ar < 8 / Altered Mental Status (Mild)",
+              "score": 1
+            },
+            {
+              "id": "m-sev",
+              "label": "Delirium / Altered Mental Status (Severe)",
+              "score": 3
+            },
+            {
+              "id": "m-manic",
+              "label": "Manic / Restless / Agitated / Coma",
+              "score": 4
+            }
+          ]
+        },
+        {
+          "id": "f-mobility",
+          "title": "Mobility and Activities of Daily Living (ADL)",
+          "options": [
+            {
+              "id": "ad-ind",
+              "label": "Independent",
+              "score": 0
+            },
+            {
+              "id": "ad-min",
+              "label": "Requires 1-person assistance",
+              "score": 1
+            },
+            {
+              "id": "ad-tot",
+              "label": "Total Dependence / Turning every 2 hours",
+              "score": 2
+            }
+          ]
+        }
+      ],
+      "isActive": true,
+      "createdAt": "2026-09-10T06:20:45.087Z"
+    }
+  ],
+  "assessments": [
+    {
+      "patientId": "p-1",
+      "wardId": "w-b7",
+      "evaluatedBy": "Staff Nurse (SIMS Clinical Assessor)",
+      "shiftDate": "2026-09-10",
+      "shiftType": "Morning",
+      "score": 6,
+      "category": 2,
+      "responses": {
+        "f-characteristics": [
+          "o-bipap"
+        ],
+        "f-vitals": [
+          "v-mod"
+        ],
+        "f-mental": [
+          "m-mild"
+        ],
+        "f-mobility": [
+          "ad-min"
+        ]
+      },
+      "notes": "",
+      "id": "assess-1789023640271",
+      "createdAt": "2026-09-10T07:00:40.271Z"
+    }
+  ],
+  "dutyRosters": [
+    {
+      "id": "dr-1",
+      "nurseId": "n-101",
+      "wardId": "w-b7",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-2",
+      "nurseId": "n-102",
+      "wardId": "w-b7",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-3",
+      "nurseId": "n-201",
+      "wardId": "w-c5e",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-4",
+      "nurseId": "n-301",
+      "wardId": "w-c5w",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Leave"
+    },
+    {
+      "id": "dr-5",
+      "nurseId": "n-401",
+      "wardId": "w-b6",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-6",
+      "nurseId": "n-501",
+      "wardId": "w-c6w",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Night"
+    },
+    {
+      "id": "dr-7",
+      "nurseId": "n-601",
+      "wardId": "w-b4",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-8",
+      "nurseId": "n-701",
+      "wardId": "w-b4",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-9",
+      "nurseId": "n-702",
+      "wardId": "w-c8e",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-10",
+      "nurseId": "n-801",
+      "wardId": "w-b4",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-11",
+      "nurseId": "n-802",
+      "wardId": "w-c6e",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-12",
+      "nurseId": "n-103",
+      "wardId": "w-b7",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Evening"
+    },
+    {
+      "id": "dr-13",
+      "nurseId": "n-202",
+      "wardId": "w-c5e",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Evening"
+    },
+    {
+      "id": "dr-14",
+      "nurseId": "n-303",
+      "wardId": "w-c5w",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Week-off"
+    },
+    {
+      "id": "dr-15",
+      "nurseId": "n-402",
+      "wardId": "w-b6",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Evening"
+    },
+    {
+      "id": "dr-16",
+      "nurseId": "n-502",
+      "wardId": "w-c6w",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Leave"
+    },
+    {
+      "id": "dr-17",
+      "nurseId": "n-703",
+      "wardId": "w-c5e",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-18",
+      "nurseId": "n-104",
+      "wardId": "w-b7",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Night"
+    },
+    {
+      "id": "dr-19",
+      "nurseId": "n-302",
+      "wardId": "w-c5w",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Night"
+    },
+    {
+      "id": "dr-20",
+      "nurseId": "n-602",
+      "wardId": "w-b4",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Week-off"
+    },
+    {
+      "id": "dr-21",
+      "nurseId": "n-803",
+      "wardId": "w-picu",
+      "assignmentDate": "2024-10-10",
+      "shiftType": "Week-off"
+    },
+    {
+      "id": "dr-1789024553761-khrtr",
+      "nurseId": "n-402",
+      "wardId": "w-b6",
+      "assignmentDate": "2024-10-01",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-1789024555261-6yr56",
+      "nurseId": "n-501",
+      "wardId": "w-c6w",
+      "assignmentDate": "2024-10-01",
+      "shiftType": "Evening"
+    },
+    {
+      "id": "dr-1789024556639-2vxx9",
+      "nurseId": "n-502",
+      "wardId": "w-c6w",
+      "assignmentDate": "2024-10-01",
+      "shiftType": "Morning"
+    },
+    {
+      "id": "dr-1789024559049-ya2a8",
+      "nurseId": "n-601",
+      "wardId": "w-b4",
+      "assignmentDate": "2024-10-01",
+      "shiftType": "Evening"
+    },
+    {
+      "id": "dr-1789024560723-5fzi8",
+      "nurseId": "n-602",
+      "wardId": "w-b4",
+      "assignmentDate": "2024-10-01",
+      "shiftType": "Night"
+    },
+    {
+      "id": "dr-1789024562738-lpt8n",
+      "nurseId": "n-702",
+      "wardId": "w-c8e",
+      "assignmentDate": "2024-10-01",
+      "shiftType": "Week-off"
+    },
+    {
+      "id": "dr-1789024564374-8x0ax",
+      "nurseId": "n-701",
+      "wardId": "w-c8e",
+      "assignmentDate": "2024-10-01",
+      "shiftType": "Leave"
+    }
+  ],
+  "assignments": []
+}
