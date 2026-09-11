@@ -1,19 +1,49 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database Service
   postgres:
     image: postgres:16-alpine
     container_name: acuityops-postgres
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password123
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password123}
       POSTGRES_DB: acuityops
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - acuityops-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d acuityops"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # AcuityOps Next.js Web Application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: acuityops-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://postgres:${DB_PASSWORD:-password123}@postgres:5432/acuityops"
+      NODE_ENV: "production"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - acuityops-net
 
 volumes:
   pgdata:
+
+networks:
+  acuityops-net:
+    driver: bridge
