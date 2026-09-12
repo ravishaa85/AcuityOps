@@ -243,7 +243,7 @@ export default function NurseDirectoryPage() {
                 <th>Competency Tier</th>
                 <th>Assigned Ward</th>
                 <th>Max Acuity Cap</th>
-                <th>Contact / Email</th>
+                <th>Contact Number</th>
                 <th>Experience</th>
                 <th>Status</th>
                 <th style={{ textAlign: 'right' }}>Actions</th>
@@ -281,7 +281,7 @@ export default function NurseDirectoryPage() {
                         </span>
                       </td>
                       <td>
-                        <span style={{ fontWeight: 600, color: '#0f172a' }}>{nurse.wardCode || 'B7'}</span>
+                        <span style={{ fontWeight: 600, color: '#0f172a' }}>{nurse.wardCode || '3F-MGW'}</span>
                         <span style={{ display: 'block', fontSize: '11px', color: '#64748b' }}>{nurse.wardName}</span>
                       </td>
                       <td>
@@ -298,8 +298,7 @@ export default function NurseDirectoryPage() {
                         </span>
                       </td>
                       <td>
-                        <div style={{ fontSize: '12px', color: '#334155' }}>{nurse.contactNumber}</div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>{nurse.email}</div>
+                        <div style={{ fontSize: '12px', color: '#334155', fontWeight: 500 }}>{nurse.contactNumber || '—'}</div>
                       </td>
                       <td style={{ fontSize: '12px', color: '#334155' }}>
                         {nurse.experienceYears} yrs
@@ -411,25 +410,15 @@ export default function NurseDirectoryPage() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Contact Number</label>
-                  <input
-                    type="text"
-                    value={formData.contactNumber}
-                    onChange={e => setFormData({ ...formData, contactNumber: e.target.value })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Email</label>
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
+              <div>
+                <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Contact Number</label>
+                <input
+                  type="text"
+                  value={formData.contactNumber}
+                  onChange={e => setFormData({ ...formData, contactNumber: e.target.value })}
+                  style={{ width: '100%' }}
+                  placeholder="+91 98471 00000"
+                />
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>

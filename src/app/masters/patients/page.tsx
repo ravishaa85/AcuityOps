@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { UserSquare2, Plus, Search, Edit2, Trash2, X, Filter } from '@/components/Icons';
-import { Patient, Ward } from '@/types';
+import { UserSquare2, Search, X, Filter, RefreshCw, Database, Activity } from '@/components/Icons';
+
+
+import { Patient, Ward, HISSyncResult } from '@/types';
 
 export default function PatientMasterPage() {
   const [patients, setPatients] = useState<Patient[]>([]);
@@ -10,40 +12,30 @@ export default function PatientMasterPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedWard, setSelectedWard] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [syncingHis, setSyncingHis] = useState(false);
+  const [syncResult, setSyncResult] = useState<HISSyncResult | null>(null);
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null);
 
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPatient, setEditingPatient] = useState<Patient | null>(null);
-  const [formData, setFormData] = useState({
-    name: '',
-    uhid: '',
-    admissionNumber: '',
-    age: 45,
-    gender: 'Male' as Patient['gender'],
-    roomBed: '',
-    doctorName: 'Dr. K. Rajagopal',
-    wardId: '',
-    diagnosis: '',
-    currentAcuityScore: 1,
-    currentAcuityCategory: 1 as 1 | 2 | 3 | 4
-  });
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 15;
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [patientsRes, wardsRes] = await Promise.all([
+      const [patientsRes, wardsRes, statusRes] = await Promise.all([
         fetch('/api/patients'),
-        fetch('/api/wards')
+        fetch('/api/wards'),
+        fetch('/api/his/sync')
       ]);
       const patientsJson = await patientsRes.json();
       const wardsJson = await wardsRes.json();
+      const statusJson = await statusRes.json();
 
       if (patientsJson.success) setPatients(patientsJson.data);
-      if (wardsJson.success) {
-        setWards(wardsJson.data);
-        if (wardsJson.data.length > 0 && !formData.wardId) {
-          setFormData(prev => ({ ...prev, wardId: wardsJson.data[0].id }));
-        }
+      if (wardsJson.success) setWards(wardsJson.data);
+      if (statusJson.success && statusJson.data?.lastSyncedAt) {
+        setLastSyncedAt(statusJson.data.lastSyncedAt);
       }
     } catch (e) {
       console.error('Failed to load patient master', e);
@@ -56,120 +48,167 @@ export default function PatientMasterPage() {
     loadData();
   }, []);
 
-  const openAddModal = () => {
-    setEditingPatient(null);
-    const rndNum = Math.floor(1000 + Math.random() * 9000);
-    setFormData({
-      name: '',
-      uhid: `SIMS-2024-${rndNum}`,
-      admissionNumber: `IP-${rndNum}`,
-      age: 50,
-      gender: 'Male',
-      roomBed: '7801',
-      doctorName: 'Dr. K. Rajagopal',
-      wardId: wards[0]?.id || '',
-      diagnosis: '',
-      currentAcuityScore: 2,
-      currentAcuityCategory: 2
-    });
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (patient: Patient) => {
-    setEditingPatient(patient);
-    setFormData({
-      name: patient.name,
-      uhid: patient.uhid,
-      admissionNumber: patient.admissionNumber,
-      age: patient.age,
-      gender: patient.gender,
-      roomBed: patient.roomBed,
-      doctorName: patient.doctorName,
-      wardId: patient.wardId,
-      diagnosis: patient.diagnosis,
-      currentAcuityScore: patient.currentAcuityScore,
-      currentAcuityCategory: patient.currentAcuityCategory
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSyncHis = async () => {
+    setSyncingHis(true);
+    setSyncResult(null);
     try {
-      if (editingPatient) {
-        const res = await fetch('/api/patients', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: editingPatient.id, ...formData })
-        });
-        const data = await res.json();
-        if (data.success) {
-          setIsModalOpen(false);
-          loadData();
-        } else {
-          alert('Failed to update: ' + data.error);
-        }
+      const res = await fetch('/api/his/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ syncWards: true, syncPatients: true })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSyncResult(data.data);
+        setLastSyncedAt(data.data.syncedAt);
+        await loadData();
       } else {
-        const res = await fetch('/api/patients', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        });
-        const data = await res.json();
-        if (data.success) {
-          setIsModalOpen(false);
-          loadData();
-        } else {
-          alert('Failed to admit patient: ' + data.error);
-        }
+        alert('HIS Sync Failed: ' + data.error);
       }
     } catch (err: any) {
-      alert('Error submitting: ' + err.message);
+      alert('Error connecting to HIS Web Service: ' + err.message);
+    } finally {
+      setSyncingHis(false);
     }
   };
 
-  const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to discharge/remove patient ${name}?`)) return;
-    try {
-      const res = await fetch(`/api/patients?id=${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) loadData();
-    } catch (e) {
-      console.error('Failed to discharge patient', e);
-    }
-  };
+
 
   const filteredPatients = patients.filter(p => {
-    const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.uhid.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.doctorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.roomBed.toLowerCase().includes(searchTerm.toLowerCase());
+    const q = searchTerm.toLowerCase();
+    const matchesSearch =
+      p.name.toLowerCase().includes(q) ||
+      p.uhid.toLowerCase().includes(q) ||
+      (p.admissionNumber && p.admissionNumber.toLowerCase().includes(q)) ||
+      p.doctorName.toLowerCase().includes(q) ||
+      p.roomBed.toLowerCase().includes(q) ||
+      (p.diagnosis && p.diagnosis.toLowerCase().includes(q));
+
     const matchesWard = selectedWard === 'all' || p.wardId === selectedWard;
     return matchesSearch && matchesWard;
   });
 
+  const totalPages = Math.ceil(filteredPatients.length / pageSize) || 1;
+  const paginatedPatients = filteredPatients.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const hisPatientsCount = patients.filter(p => p.source === 'HIS').length;
+
   return (
     <div className="page-wrapper">
       {/* Header */}
-      <div className="page-header">
+      <div className="page-header" style={{ alignItems: 'flex-start' }}>
         <div>
           <div className="page-title">
-            <UserSquare2 size={26} color="#8b5cf6" />
-            <span>Patient Registry Master</span>
+            <UserSquare2 size={26} color="#7c3aed" />
+            <span>Patient Registry & HIS Inpatient Directory</span>
           </div>
           <p className="page-subtitle">
-            Hospital inpatient admissions, clinical diagnoses, room assignments, and current acuity classifications
+            Synchronized with SIMS Hospital Information System (HIS) live inpatient web services • Clinical acuity tracking & bed management
           </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' }}>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              background: '#ecfdf5',
+              border: '1px solid #a7f3d0',
+              color: '#065f46',
+              padding: '3px 10px',
+              borderRadius: '20px',
+              fontSize: '11px',
+              fontWeight: 700
+            }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: '#10b981', animation: 'pulse 2s infinite' }} />
+              HIS Web Service Connected
+            </span>
+            <span style={{ fontSize: '12px', color: '#64748b' }}>
+              Active Inpatients: <strong style={{ color: '#0f172a' }}>{patients.length}</strong>
+              {hisPatientsCount > 0 && ` (${hisPatientsCount} synced from HIS)`}
+            </span>
+            {lastSyncedAt && (
+              <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                Last synced: {new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}, {new Date(lastSyncedAt).toLocaleDateString()}
+              </span>
+            )}
+          </div>
         </div>
 
-        <button onClick={openAddModal} className="btn-primary">
-          <Plus size={16} />
-          <span>Admit New Patient</span>
-        </button>
+        {/* Action Buttons */}
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button
+            onClick={handleSyncHis}
+            disabled={syncingHis}
+            className="btn-secondary"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '9px 16px',
+              fontWeight: 600,
+              background: syncingHis ? '#f1f5f9' : '#ffffff',
+              borderColor: '#7c3aed',
+              color: '#7c3aed'
+            }}
+            title="Sync all active inpatients from SIMS Hospital HIS API"
+          >
+            <RefreshCw
+              size={16}
+              style={{
+                animation: syncingHis ? 'spin 1s linear infinite' : 'none'
+              }}
+            />
+            <span>{syncingHis ? 'Syncing with HIS...' : 'Sync with HIS'}</span>
+          </button>
+        </div>
       </div>
+
+
+      {/* Sync Notification Banner */}
+      {syncResult && (
+        <div style={{
+          background: 'linear-gradient(135deg, #f5f3ff, #ede9fe)',
+          border: '1px solid #ddd6fe',
+          borderRadius: '10px',
+          padding: '14px 20px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '8px',
+              background: '#7c3aed',
+              color: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <Database size={18} />
+            </div>
+            <div>
+              <div style={{ fontSize: '13px', fontWeight: 700, color: '#4c1d95' }}>
+                HIS Inpatient Data Synchronized Successfully
+              </div>
+              <div style={{ fontSize: '12px', color: '#6d28d9' }}>
+                Fetched {syncResult.patients.totalFetched} active inpatients ({syncResult.patients.newAdmitted} new admitted, {syncResult.patients.updated} updated) across {syncResult.wards.totalFetched} hospital wards.
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setSyncResult(null)}
+            style={{ color: '#7c3aed', background: 'transparent', border: 'none', cursor: 'pointer' }}
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Main Table Card */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        {/* Search & Filter Toolbar */}
         <div style={{
           padding: '16px 20px',
           borderBottom: '1px solid var(--border-subtle)',
@@ -184,284 +223,202 @@ export default function PatientMasterPage() {
             <Search size={16} color="#94a3b8" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
             <input
               type="text"
-              placeholder="Search UHID, patient name, doctor, bed..."
+              placeholder="Search Patient Name, UHID, IP No, Bed, Doctor, Diagnosis..."
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              style={{ paddingLeft: '36px', width: '300px' }}
+              onChange={e => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
+              style={{ paddingLeft: '36px', width: '380px' }}
             />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '12px', color: '#475569', fontWeight: 600 }}>Filter Ward:</span>
-            <select value={selectedWard} onChange={e => setSelectedWard(e.target.value)} style={{ fontSize: '12px' }}>
-              <option value="all">All Wards</option>
-              {wards.map(w => (
-                <option key={w.id} value={w.id}>{w.code} - {w.name}</option>
-              ))}
-            </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '12px', color: '#475569', fontWeight: 600 }}>Filter Ward:</span>
+              <select
+                value={selectedWard}
+                onChange={e => {
+                  setSelectedWard(e.target.value);
+                  setCurrentPage(1);
+                }}
+                style={{ fontSize: '12px', maxWidth: '240px' }}
+              >
+                <option value="all">All Wards ({wards.length})</option>
+                {wards.map(w => (
+                  <option key={w.id} value={w.id}>{w.code} - {w.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <span style={{ fontSize: '12px', color: '#64748b' }}>
+              Showing <strong>{filteredPatients.length}</strong> patients
+            </span>
           </div>
         </div>
 
+        {/* Patients Table */}
         <div className="data-table-container" style={{ border: 'none', borderRadius: '0' }}>
           <table className="data-table">
             <thead>
               <tr>
-                <th>Patient Name</th>
-                <th>UHID</th>
-                <th>Admission No</th>
-                <th>Ward & Bed</th>
-                <th>Attending Doctor</th>
-                <th>Diagnosis</th>
-                <th>Acuity Tier</th>
-                <th>Current Staff</th>
-                <th style={{ textAlign: 'right' }}>Actions</th>
+                <th style={{ width: '22%' }}>Patient Name</th>
+                <th style={{ width: '10%' }}>UHID</th>
+                <th style={{ width: '10%' }}>IP No</th>
+                <th style={{ width: '16%' }}>Ward & Bed</th>
+                <th style={{ width: '18%' }}>Attending Doctor</th>
+                <th style={{ width: '14%' }}>Diagnosis</th>
+                <th style={{ width: '10%' }}>Acuity Tier</th>
               </tr>
             </thead>
+
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                    Loading patient registry...
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '50px', color: '#64748b' }}>
+                    <RefreshCw size={24} style={{ animation: 'spin 1s linear infinite', margin: '0 auto 10px', display: 'block', color: '#7c3aed' }} />
+                    Loading patient directory from database & HIS...
                   </td>
                 </tr>
-              ) : filteredPatients.length === 0 ? (
+              ) : paginatedPatients.length === 0 ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: 'center', padding: '40px', color: '#64748b' }}>
-                    No patients found.
+                  <td colSpan={7} style={{ textAlign: 'center', padding: '50px', color: '#64748b' }}>
+                    No patients found matching your search or filter.
                   </td>
                 </tr>
               ) : (
-                filteredPatients.map(patient => {
+
+                paginatedPatients.map(patient => {
                   const acuityClass = `badge-acuity-${patient.currentAcuityCategory}`;
 
                   return (
                     <tr key={patient.id}>
+                      {/* Patient Name */}
                       <td>
-                        <div style={{ fontWeight: 700, color: '#0f172a' }}>{patient.name}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ fontWeight: 700, color: '#0f172a' }}>{patient.name}</div>
+                          {patient.source === 'HIS' && (
+                            <span style={{
+                              fontSize: '9px',
+                              fontWeight: 800,
+                              background: '#eff6ff',
+                              color: '#2563eb',
+                              border: '1px solid #bfdbfe',
+                              padding: '1px 5px',
+                              borderRadius: '4px'
+                            }}>
+                              HIS
+                            </span>
+                          )}
+                        </div>
                         <div style={{ fontSize: '11px', color: '#64748b' }}>
-                          {patient.age}y • {patient.gender}
+                          {patient.age}y • {patient.gender} • Admitted: {patient.admissionDate}
                         </div>
                       </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#475569' }}>
+
+                      {/* UHID */}
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 600, color: '#1e293b' }}>
                         {patient.uhid}
                       </td>
-                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#64748b' }}>
-                        {patient.admissionNumber}
+
+                      {/* IP No */}
+                      <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', fontWeight: 600, color: '#7c3aed' }}>
+                        {patient.admissionNumber || '-'}
                       </td>
+
+                      {/* Ward & Bed */}
                       <td>
-                        <span style={{ fontWeight: 700, color: '#6d28d9' }}>{patient.wardCode || 'B7'}</span>
-                        <span style={{ color: '#64748b', marginLeft: '6px' }}>Bed {patient.roomBed}</span>
+                        <div style={{ fontWeight: 700, color: '#4c1d95', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span style={{
+                            background: '#f5f3ff',
+                            border: '1px solid #ddd6fe',
+                            padding: '1px 6px',
+                            borderRadius: '4px',
+                            fontSize: '11px'
+                          }}>
+                            {patient.wardCode || 'WARD'}
+                          </span>
+                          <span style={{ color: '#0f172a', fontSize: '12px' }}>{patient.roomBed || '-'}</span>
+                        </div>
+                        {patient.wardName && (
+                          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px', maxWidth: '160px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {patient.wardName}
+                          </div>
+                        )}
                       </td>
-                      <td style={{ fontSize: '12px', color: '#1e293b' }}>
+
+                      {/* Attending Doctor */}
+                      <td style={{ fontSize: '12px', color: '#1e293b', fontWeight: 500 }}>
                         {patient.doctorName}
                       </td>
-                      <td style={{ fontSize: '12px', color: '#475569', maxWidth: '220px' }}>
-                        {patient.diagnosis}
+
+                      {/* Clinical Diagnosis */}
+                      <td style={{ fontSize: '12px', color: '#475569', lineHeight: 1.3 }}>
+                        <span title={patient.diagnosis}>
+                          {patient.diagnosis || 'Clinical evaluation in progress'}
+                        </span>
                       </td>
+
+                      {/* Acuity Tier */}
                       <td>
                         <span className={acuityClass}>
                           Level {patient.currentAcuityCategory} ({patient.currentAcuityScore})
                         </span>
-                      </td>
-                      <td>
-                        {patient.currentShiftStaff ? (
-                          <div style={{ fontSize: '12px', color: '#059669', fontWeight: 600 }}>
-                            {patient.currentShiftStaff.nurseName}
+                        {patient.currentShiftStaff && (
+                          <div style={{ fontSize: '10px', color: '#059669', marginTop: '4px', fontWeight: 600 }}>
+                            Nurse: {patient.currentShiftStaff.nurseName.split(' ')[0]}
                           </div>
-                        ) : (
-                          <span style={{ fontSize: '11px', color: '#ef4444', fontStyle: 'italic' }}>
-                            Unassigned
-                          </span>
                         )}
                       </td>
-                      <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'inline-flex', gap: '6px' }}>
-                          <button
-                            onClick={() => openEditModal(patient)}
-                            style={{ padding: '6px', color: '#6d28d9', background: '#f5f3ff', border: '1px solid #ddd6fe', borderRadius: '6px' }}
-                            title="Edit Patient"
-                          >
-                            <Edit2 size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(patient.id, patient.name)}
-                            style={{ padding: '6px', color: '#dc2626', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '6px' }}
-                            title="Discharge Patient"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      </td>
                     </tr>
+
                   );
                 })
               )}
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* Admit / Edit Patient Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
-                {editingPatient ? 'Edit Patient Admission' : 'Admit Inpatient'}
-              </h3>
-              <button onClick={() => setIsModalOpen(false)} style={{ color: '#64748b' }}>
-                <X size={18} />
-              </button>
-            </div>
+        {/* Pagination Bar */}
+        <div style={{
+          padding: '14px 20px',
+          borderTop: '1px solid var(--border-subtle)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: '#ffffff',
+          flexWrap: 'wrap',
+          gap: '12px'
+        }}>
+          <div style={{ fontSize: '12px', color: '#64748b' }}>
+            Showing {filteredPatients.length === 0 ? 0 : (currentPage - 1) * pageSize + 1} to{' '}
+            {Math.min(currentPage * pageSize, filteredPatients.length)} of {filteredPatients.length} inpatients
+          </div>
 
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Patient Full Name *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>UHID *</label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.uhid}
-                    onChange={e => setFormData({ ...formData, uhid: e.target.value })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Admission No</label>
-                  <input
-                    type="text"
-                    value={formData.admissionNumber}
-                    onChange={e => setFormData({ ...formData, admissionNumber: e.target.value })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Age</label>
-                  <input
-                    type="number"
-                    value={formData.age}
-                    onChange={e => setFormData({ ...formData, age: parseInt(e.target.value) || 0 })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Gender</label>
-                  <select
-                    value={formData.gender}
-                    onChange={e => setFormData({ ...formData, gender: e.target.value as any })}
-                    style={{ width: '100%' }}
-                  >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Ward *</label>
-                  <select
-                    value={formData.wardId}
-                    onChange={e => setFormData({ ...formData, wardId: e.target.value })}
-                    style={{ width: '100%' }}
-                  >
-                    {wards.map(w => (
-                      <option key={w.id} value={w.id}>{w.code} - {w.name}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Room / Bed *</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. 7804-A"
-                    value={formData.roomBed}
-                    onChange={e => setFormData({ ...formData, roomBed: e.target.value })}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Attending Doctor *</label>
-                <input
-                  type="text"
-                  required
-                  value={formData.doctorName}
-                  onChange={e => setFormData({ ...formData, doctorName: e.target.value })}
-                  style={{ width: '100%' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Clinical Diagnosis</label>
-                <textarea
-                  rows={2}
-                  value={formData.diagnosis}
-                  onChange={e => setFormData({ ...formData, diagnosis: e.target.value })}
-                  style={{ width: '100%', resize: 'none' }}
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Initial Acuity Score</label>
-                  <input
-                    type="number"
-                    value={formData.currentAcuityScore}
-                    onChange={e => {
-                      const score = parseInt(e.target.value) || 1;
-                      let cat: 1 | 2 | 3 | 4 = 1;
-                      if (score >= 15) cat = 4;
-                      else if (score >= 10) cat = 3;
-                      else if (score >= 5) cat = 2;
-                      setFormData({ ...formData, currentAcuityScore: score, currentAcuityCategory: cat });
-                    }}
-                    style={{ width: '100%' }}
-                  />
-                </div>
-                <div>
-                  <label style={{ fontSize: '12px', color: '#475569', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Acuity Category</label>
-                  <select
-                    value={formData.currentAcuityCategory}
-                    onChange={e => setFormData({ ...formData, currentAcuityCategory: parseInt(e.target.value) as any })}
-                    style={{ width: '100%' }}
-                  >
-                    <option value={1}>Acuity 1 (Low)</option>
-                    <option value={2}>Acuity 2 (Moderate)</option>
-                    <option value={3}>Acuity 3 (High)</option>
-                    <option value={4}>Acuity 4 (Critical)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '14px' }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} className="btn-secondary">
-                  Cancel
-                </button>
-                <button type="submit" className="btn-primary">
-                  {editingPatient ? 'Save Changes' : 'Admit Patient'}
-                </button>
-              </div>
-            </form>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="btn-secondary"
+              style={{ padding: '5px 12px', fontSize: '12px' }}
+            >
+              Previous
+            </button>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: '#334155', margin: '0 8px' }}>
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages || totalPages === 0}
+              className="btn-secondary"
+              style={{ padding: '5px 12px', fontSize: '12px' }}
+            >
+              Next
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
+

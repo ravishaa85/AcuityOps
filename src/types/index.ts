@@ -6,9 +6,12 @@ export interface Ward {
   name: string;
   floor: string;
   bedCapacity: number;
+  beds?: string[];
   departmentType: 'General' | 'ICU' | 'Step-down' | 'Surgical' | 'Pediatric' | 'Emergency';
   targetUtilization: number;
   isActive: boolean;
+  source?: 'HIS' | 'MANUAL';
+  lastSyncedAt?: string;
   createdAt: string;
 }
 
@@ -40,11 +43,14 @@ export interface Patient {
   doctorName: string;
   wardId: string;
   wardCode?: string;
+  wardName?: string;
   admissionDate: string;
   diagnosis: string;
   currentAcuityScore: number;
   currentAcuityCategory: 1 | 2 | 3 | 4;
   lastAcuityUpdate: string;
+  source?: 'HIS' | 'MANUAL';
+  lastSyncedAt?: string;
   currentShiftStaff?: {
     nurseId: string;
     nurseName: string;
@@ -57,6 +63,33 @@ export interface Patient {
   } | null;
 }
 
+export interface HISSyncResult {
+  wards: {
+    totalFetched: number;
+    newAdded: number;
+    updated: number;
+    totalBeds: number;
+  };
+  patients: {
+    totalFetched: number;
+    newAdmitted: number;
+    updated: number;
+    activeInpatients: number;
+  };
+  syncedAt: string;
+  status: 'success' | 'partial' | 'error';
+  message?: string;
+}
+
+export interface HISSyncStatus {
+  isConnected: boolean;
+  lastSyncedAt: string | null;
+  totalHisWards: number;
+  totalHisPatients: number;
+  totalHisBeds: number;
+}
+
+
 export interface AcuityFormFieldOption {
   id: string;
   label: string;
@@ -66,6 +99,7 @@ export interface AcuityFormFieldOption {
 export interface AcuityFormField {
   id: string;
   title: string;
+  category?: string;
   options: AcuityFormFieldOption[];
 }
 
@@ -87,6 +121,7 @@ export interface AcuityAssessment {
   shiftType: 'Morning' | 'Evening' | 'Night';
   score: number;
   category: 1 | 2 | 3 | 4;
+  npRatio?: string;
   responses: Record<string, string[]>; // fieldId -> optionIds
   notes?: string;
   createdAt: string;

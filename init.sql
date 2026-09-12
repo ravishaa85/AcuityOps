@@ -7,9 +7,12 @@ CREATE TABLE IF NOT EXISTS wards (
   name VARCHAR(100) NOT NULL,
   floor VARCHAR(20) DEFAULT 'Floor 1',
   bed_capacity INTEGER NOT NULL DEFAULT 20,
+  beds JSONB,
   department_type VARCHAR(50) NOT NULL DEFAULT 'General',
   target_utilization INTEGER NOT NULL DEFAULT 85,
   is_active BOOLEAN DEFAULT TRUE,
+  source VARCHAR(20) DEFAULT 'MANUAL',
+  last_synced_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -43,6 +46,8 @@ CREATE TABLE IF NOT EXISTS patients (
   current_acuity_score INTEGER DEFAULT 1,
   current_acuity_category INTEGER DEFAULT 1, -- 1, 2, 3, 4
   last_acuity_update TIMESTAMP,
+  source VARCHAR(20) DEFAULT 'MANUAL',
+  last_synced_at TIMESTAMP,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

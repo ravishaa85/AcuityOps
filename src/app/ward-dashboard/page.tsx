@@ -10,15 +10,18 @@ import {
   Building2,
   Calendar,
   Clock,
-  ChevronDown
+  ChevronDown,
+  RefreshCw
 } from '@/components/Icons';
+
 import { Patient, Ward, Nurse, CompetencyLevel } from '@/types';
 import AcuityScoringModal from '@/components/AcuityScoringModal';
 import AutoAssignModal from '@/components/AutoAssignModal';
+import { interpretAcuityScore, isStaffCompetentForAcuity, SIMS_ACUITY_SCALE } from '@/lib/acuity-tool';
 
 export default function WardDashboardPage() {
   const [wards, setWards] = useState<Ward[]>([]);
-  const [selectedWardId, setSelectedWardId] = useState<string>('w-b7');
+  const [selectedWardId, setSelectedWardId] = useState<string>('his-w-3fmgw');
   const [patients, setPatients] = useState<Patient[]>([]);
   const [nurses, setNurses] = useState<Nurse[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,6 +39,7 @@ export default function WardDashboardPage() {
         const data = await res.json();
         if (data.success && data.data.length > 0) {
           setWards(data.data);
+          setSelectedWardId(prev => (data.data.some((w: Ward) => w.id === prev) ? prev : data.data[0].id));
         }
       } catch (e) {
         console.error('Failed to load wards', e);
@@ -72,12 +76,13 @@ export default function WardDashboardPage() {
 
   const activeWard = wards.find(w => w.id === selectedWardId) || wards[0];
 
-  // Calculate Slide 6 KPI metrics
+  // Calculate SIMS Hospital Standard KPI metrics (from PDF: 1:6, 1:5, 1:4)
   const patientCount = patients.length;
   const acuity1Count = patients.filter(p => p.currentAcuityCategory === 1).length;
   const acuity2Count = patients.filter(p => p.currentAcuityCategory === 2).length;
-  const acuity3Count = patients.filter(p => p.currentAcuityCategory === 3).length;
-  const acuity4Count = patients.filter(p => p.currentAcuityCategory === 4).length;
+  const acuity3Count = patients.filter(p => p.currentAcuityCategory >= 3).length;
+  // Required nurses using SIMS N:P ratios (1:6 for Acuity 1, 1:5 for Acuity 2, 1:4 for Acuity 3)
+  const requiredNurses = Math.ceil(acuity1Count / 6) + Math.ceil(acuity2Count / 5) + Math.ceil(acuity3Count / 4);
   const totalAcuityScore = patients.reduce((sum, p) => sum + (p.currentAcuityScore || 1), 0);
 
   // Calculate Side Panel: Current Shift Staff Acuity Totals (Slide 6 exact)
@@ -160,8 +165,41 @@ export default function WardDashboardPage() {
             <Sparkles size={16} />
             <span>Auto-Assign Staff</span>
           </button>
+
+          {/* Quick Refresh from HIS */}
+          <button
+            onClick={async () => {
+              setLoading(true);
+              try {
+                await fetch('/api/his/sync', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ syncWards: true, syncPatients: true })
+                });
+                const res = await fetch('/api/wards');
+                const data = await res.json();
+                if (data.success && data.data.length > 0) {
+                  setWards(data.data);
+                }
+                if (selectedWardId) {
+                  loadWardData(selectedWardId);
+                }
+              } catch (err) {
+                console.error(err);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="btn-secondary"
+            style={{ padding: '9px 14px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            title="Refresh Inpatients & Beds from HIS"
+          >
+            <RefreshCw size={15} />
+            <span>Sync HIS</span>
+          </button>
         </div>
       </div>
+
 
       {/* Slide 6 Top KPI Metrics Banner */}
       <div style={{
@@ -185,7 +223,7 @@ export default function WardDashboardPage() {
           </div>
         </div>
 
-        {/* Acuity 1 Count (Green) */}
+        {/* Acuity 1 Count (Green - N:P 1:6) */}
         <div style={{
           background: 'linear-gradient(135deg, #059669, #047857)',
           borderRadius: '12px',
@@ -194,28 +232,13 @@ export default function WardDashboardPage() {
           color: '#fff',
           boxShadow: '0 4px 12px rgba(5, 150, 105, 0.2)'
         }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.9 }}>Acuity 1 Count</div>
+          <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.9 }}>Acuity 1 (1:6 Ratio)</div>
           <div style={{ fontSize: '32px', fontWeight: 800, fontFamily: 'var(--font-mono)', marginTop: '4px' }}>
             {acuity1Count}
           </div>
         </div>
 
-        {/* Acuity 2 Count (Blue) */}
-        <div style={{
-          background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
-          borderRadius: '12px',
-          padding: '16px 14px',
-          textAlign: 'center',
-          color: '#fff',
-          boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
-        }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.9 }}>Acuity 2 Count</div>
-          <div style={{ fontSize: '32px', fontWeight: 800, fontFamily: 'var(--font-mono)', marginTop: '4px' }}>
-            {acuity2Count}
-          </div>
-        </div>
-
-        {/* Acuity 3 Count (Orange) */}
+        {/* Acuity 2 Count (Amber/Blue - N:P 1:5) */}
         <div style={{
           background: 'linear-gradient(135deg, #d97706, #b45309)',
           borderRadius: '12px',
@@ -224,13 +247,13 @@ export default function WardDashboardPage() {
           color: '#fff',
           boxShadow: '0 4px 12px rgba(217, 119, 6, 0.2)'
         }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.9 }}>Acuity 3 Count</div>
+          <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.9 }}>Acuity 2 (1:5 Ratio)</div>
           <div style={{ fontSize: '32px', fontWeight: 800, fontFamily: 'var(--font-mono)', marginTop: '4px' }}>
-            {acuity3Count}
+            {acuity2Count}
           </div>
         </div>
 
-        {/* Acuity 4 Count (Red) */}
+        {/* Acuity 3 Count (Red - N:P 1:4) */}
         <div style={{
           background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
           borderRadius: '12px',
@@ -239,9 +262,24 @@ export default function WardDashboardPage() {
           color: '#fff',
           boxShadow: '0 4px 12px rgba(220, 38, 38, 0.2)'
         }}>
-          <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.9 }}>Acuity 4 Count</div>
+          <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.9 }}>Acuity 3 (1:4 Ratio)</div>
           <div style={{ fontSize: '32px', fontWeight: 800, fontFamily: 'var(--font-mono)', marginTop: '4px' }}>
-            {acuity4Count}
+            {acuity3Count}
+          </div>
+        </div>
+
+        {/* Required Nurses (Indigo - from N:P ratios) */}
+        <div style={{
+          background: 'linear-gradient(135deg, #4f46e5, #3730a3)',
+          borderRadius: '12px',
+          padding: '16px 14px',
+          textAlign: 'center',
+          color: '#fff',
+          boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)'
+        }}>
+          <div style={{ fontSize: '12px', fontWeight: 600, opacity: 0.9 }}>Required Staff (N:P)</div>
+          <div style={{ fontSize: '32px', fontWeight: 800, fontFamily: 'var(--font-mono)', marginTop: '4px' }}>
+            {requiredNurses}
           </div>
         </div>
 
@@ -289,9 +327,9 @@ export default function WardDashboardPage() {
                 <tr>
                   <th>Patient</th>
                   <th>UHID</th>
-                  <th>Admission Number</th>
-                  <th>Room</th>
-                  <th>Doctor</th>
+                  <th>IP No</th>
+                  <th>Bed</th>
+                  <th>Attending Doctor & Diagnosis</th>
                   <th>Acuity Score</th>
                   <th>Last Acuity Update</th>
                   <th>Current Shift Staff</th>
@@ -327,20 +365,26 @@ export default function WardDashboardPage() {
                         <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#475569' }}>
                           {patient.uhid}
                         </td>
-                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#64748b' }}>
+                        <td style={{ fontFamily: 'var(--font-mono)', fontSize: '12px', color: '#7c3aed', fontWeight: 600 }}>
                           {patient.admissionNumber}
                         </td>
                         <td style={{ fontWeight: 600, color: '#1e293b' }}>
                           {patient.roomBed}
                         </td>
-                        <td style={{ fontSize: '12px', color: '#475569' }}>
-                          {patient.doctorName}
+                        <td>
+                          <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a' }}>{patient.doctorName}</div>
+                          {patient.diagnosis && (
+                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px', maxWidth: '220px' }} title={patient.diagnosis}>
+                              {patient.diagnosis}
+                            </div>
+                          )}
                         </td>
                         <td>
                           <span className={acuityClass} style={{ fontWeight: 700, fontSize: '12px' }}>
                             {patient.currentAcuityScore}
                           </span>
                         </td>
+
                         <td style={{ fontSize: '11px', color: '#64748b', whiteSpace: 'nowrap' }}>
                           {patient.lastAcuityUpdate || '11:46 AM, 10-10-2024'}
                         </td>
@@ -353,6 +397,11 @@ export default function WardDashboardPage() {
                               <span className={`competency-${patient.currentShiftStaff.competency.toLowerCase().replace(' ', '-')}`}>
                                 ({patient.currentShiftStaff.competency})
                               </span>
+                              {!isStaffCompetentForAcuity(patient.currentShiftStaff.competency, (patient.currentAcuityCategory >= 3 ? 3 : patient.currentAcuityCategory === 2 ? 2 : 1)) && (
+                                <div style={{ fontSize: '10px', color: '#dc2626', fontWeight: 700, marginTop: '2px' }}>
+                                  ⚠️ Competent+ req.
+                                </div>
+                              )}
                             </div>
                           ) : (
                             <span style={{ color: '#ef4444', fontSize: '11px', fontStyle: 'italic' }}>
@@ -529,39 +578,46 @@ export default function WardDashboardPage() {
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
-              {nurses.map(nurse => (
-                <div
-                  key={nurse.id}
-                  onClick={() => handleAssignStaff(nurse.id)}
-                  style={{
-                    padding: '10px 14px',
-                    borderRadius: '8px',
-                    background: '#f8fafc',
-                    border: '1px solid var(--border-subtle)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease'
-                  }}
-                  onMouseEnter={e => {
-                    e.currentTarget.style.borderColor = '#7c3aed';
-                    e.currentTarget.style.background = '#f5f3ff';
-                  }}
-                  onMouseLeave={e => {
-                    e.currentTarget.style.borderColor = 'var(--border-subtle)';
-                    e.currentTarget.style.background = '#f8fafc';
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>{nurse.name}</div>
-                    <div style={{ fontSize: '11px', color: '#64748b' }}>Cap: {nurse.maxAcuityCapacity} pts</div>
+              {nurses.map(nurse => {
+                const targetTier = selectedPatientForStaff.currentAcuityCategory >= 3 ? 3 : selectedPatientForStaff.currentAcuityCategory === 2 ? 2 : 1;
+                const isCompliant = isStaffCompetentForAcuity(nurse.competency, targetTier);
+
+                return (
+                  <div
+                    key={nurse.id}
+                    onClick={() => handleAssignStaff(nurse.id)}
+                    style={{
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      background: '#f8fafc',
+                      border: isCompliant ? '1px solid var(--border-subtle)' : '1px solid #fecaca',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = '#7c3aed';
+                      e.currentTarget.style.background = '#f5f3ff';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = isCompliant ? 'var(--border-subtle)' : '#fecaca';
+                      e.currentTarget.style.background = '#f8fafc';
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 600, color: '#0f172a' }}>{nurse.name}</div>
+                      <div style={{ fontSize: '11px', color: '#64748b' }}>
+                        Cap: {nurse.maxAcuityCapacity} pts • {!isCompliant && <span style={{ color: '#dc2626', fontWeight: 700 }}>Acuity 3 requires Competent+</span>}
+                      </div>
+                    </div>
+                    <span className={`competency-${nurse.competency.toLowerCase().replace(' ', '-')}`}>
+                      {nurse.competency}
+                    </span>
                   </div>
-                  <span className={`competency-${nurse.competency.toLowerCase().replace(' ', '-')}`}>
-                    {nurse.competency}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end' }}>

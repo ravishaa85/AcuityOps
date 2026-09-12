@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAcuityAssessments, createAcuityAssessment } from '@/lib/db';
+import { interpretAcuityScore } from '@/lib/acuity-tool';
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,22 +20,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: 'Patient, ward, and score are required' }, { status: 400 });
     }
 
-    // Determine category from score:
-    // 0-4 -> 1, 5-9 -> 2, 10-14 -> 3, 15+ -> 4
-    let category: 1 | 2 | 3 | 4 = 1;
-    if (body.score >= 15) category = 4;
-    else if (body.score >= 10) category = 3;
-    else if (body.score >= 5) category = 2;
-    else category = 1;
+    // Determine category and N:P ratio per SIMS Patient Acuity Tool:
+    // 1-12 -> Acuity 1 (1:6)
+    // 13-24 -> Acuity II (1:5)
+    // 25-48 -> Acuity III (1:4)
+    const tierInfo = interpretAcuityScore(body.score);
+    const category = tierInfo.tier;
 
     const assessment = await createAcuityAssessment({
       patientId: body.patientId,
       wardId: body.wardId,
-      evaluatedBy: body.evaluatedBy || 'Charge Nurse',
+      evaluatedBy: body.evaluatedBy || 'Staff Nurse (SIMS Clinical Assessor)',
       shiftDate: body.shiftDate || new Date().toISOString().split('T')[0],
       shiftType: body.shiftType || 'Morning',
       score: body.score,
       category,
+      npRatio: tierInfo.npRatio,
       responses: body.responses || {},
       notes: body.notes || ''
     });

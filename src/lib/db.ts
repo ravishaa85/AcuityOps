@@ -21,7 +21,14 @@ interface DatabaseData {
     assignedMode: string;
     continuityScore: number;
   }>;
+  hisSyncMeta?: {
+    lastSyncedAt: string;
+    totalWards: number;
+    totalPatients: number;
+    totalBeds: number;
+  };
 }
+
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'acuityops-db.json');
@@ -98,7 +105,9 @@ function persistData() {
 // --- Ward CRUD ---
 export async function getWards(): Promise<Ward[]> {
   const db = ensureDataFile();
-  return db.wards;
+  // Ward directory should have entries only learnt from API
+  const hisWards = db.wards.filter(w => w.source === 'HIS');
+  return hisWards.length > 0 ? hisWards : db.wards;
 }
 
 export async function getWardById(id: string): Promise<Ward | undefined> {
@@ -200,10 +209,14 @@ export async function getPatients(wardId?: string): Promise<Patient[]> {
   const db = ensureDataFile();
   const wardsMap = new Map(db.wards.map(w => [w.id, w]));
 
-  const mapped = db.patients.map(p => ({
-    ...p,
-    wardCode: wardsMap.get(p.wardId)?.code || ''
-  }));
+  const mapped = db.patients.map(p => {
+    const ward = wardsMap.get(p.wardId) || Array.from(wardsMap.values()).find(w => w.code.toLowerCase() === (p.wardCode || '').toLowerCase());
+    return {
+      ...p,
+      wardCode: ward?.code || p.wardCode || '',
+      wardName: ward?.name || p.wardName || ''
+    };
+  });
 
   if (wardId && wardId !== 'all') {
     return mapped.filter(p => p.wardId === wardId || p.wardCode?.toLowerCase() === wardId.toLowerCase());
@@ -215,9 +228,10 @@ export async function getPatientById(id: string): Promise<Patient | undefined> {
   const db = ensureDataFile();
   const patient = db.patients.find(p => p.id === id || p.uhid === id);
   if (!patient) return undefined;
-  const ward = db.wards.find(w => w.id === patient.wardId);
-  return { ...patient, wardCode: ward?.code };
+  const ward = db.wards.find(w => w.id === patient.wardId || w.code.toLowerCase() === (patient.wardCode || '').toLowerCase());
+  return { ...patient, wardCode: ward?.code || patient.wardCode, wardName: ward?.name || patient.wardName };
 }
+
 
 export async function createPatient(patientData: Omit<Patient, 'id'>): Promise<Patient> {
   const db = ensureDataFile();
@@ -442,3 +456,114 @@ export async function getHospitalSummaryMetrics(): Promise<WardSummaryMetric[]> 
   // Sort: Critical over-capacity wards first (like Slide 8: B7 at 145%, C5E at 118%, C5W at 104%)
   return metrics.sort((a, b) => b.capacityUtilization - a.capacityUtilization);
 }
+
+// --- Bulk Upsert & HIS Sync Helpers ---
+
+export async function bulkUpsertWards(
+  incomingWards: Ward[],
+  options: { replaceAll?: boolean } = { replaceAll: true }
+): Promise<{ newCount: number; updatedCount: number; total: number }> {
+  const db = ensureDataFile();
+  const hisWards = incomingWards.map(w => ({ ...w, source: 'HIS' as const }));
+
+  if (options.replaceAll) {
+    // Ward directory should have entries only learnt from API
+    db.wards = hisWards;
+    persistData();
+    return { newCount: hisWards.length, updatedCount: 0, total: hisWards.length };
+  }
+
+  let newCount = 0;
+  let updatedCount = 0;
+
+  for (const inc of hisWards) {
+    const existingIndex = db.wards.findIndex(w =>
+      w.id === inc.id ||
+      w.code.toLowerCase() === inc.code.toLowerCase() ||
+      w.name.trim().toLowerCase() === inc.name.trim().toLowerCase()
+    );
+
+    if (existingIndex >= 0) {
+      db.wards[existingIndex] = {
+        ...db.wards[existingIndex],
+        ...inc,
+        source: 'HIS',
+        lastSyncedAt: inc.lastSyncedAt || new Date().toISOString()
+      };
+      updatedCount++;
+    } else {
+      db.wards.push(inc);
+      newCount++;
+    }
+  }
+
+  // Filter so ward directory contains only entries learnt from API
+  db.wards = db.wards.filter(w => w.source === 'HIS');
+  persistData();
+  return { newCount, updatedCount, total: db.wards.length };
+}
+
+export async function bulkUpsertPatients(incomingPatients: Patient[]): Promise<{ newCount: number; updatedCount: number; total: number }> {
+  const db = ensureDataFile();
+  let newCount = 0;
+  let updatedCount = 0;
+
+  for (const inc of incomingPatients) {
+    const existingIndex = db.patients.findIndex(p =>
+      p.uhid === inc.uhid ||
+      (p.admissionNumber && inc.admissionNumber && p.admissionNumber === inc.admissionNumber)
+    );
+
+    if (existingIndex >= 0) {
+      // Preserve clinical acuity ratings & assigned nurses if already completed in AcuityOps
+      const current = db.patients[existingIndex];
+      db.patients[existingIndex] = {
+        ...current,
+        name: inc.name,
+        age: inc.age || current.age,
+        gender: inc.gender || current.gender,
+        admissionNumber: inc.admissionNumber || current.admissionNumber,
+        doctorName: inc.doctorName || current.doctorName,
+        diagnosis: inc.diagnosis || current.diagnosis,
+        admissionDate: inc.admissionDate || current.admissionDate,
+        wardId: inc.wardId || current.wardId,
+        wardCode: inc.wardCode || current.wardCode,
+        roomBed: inc.roomBed || current.roomBed,
+        currentAcuityScore: current.currentAcuityScore || inc.currentAcuityScore,
+        currentAcuityCategory: current.currentAcuityCategory || inc.currentAcuityCategory,
+        lastAcuityUpdate: current.lastAcuityUpdate || inc.lastAcuityUpdate,
+        source: 'HIS',
+        lastSyncedAt: inc.lastSyncedAt || new Date().toISOString()
+      };
+      updatedCount++;
+    } else {
+      db.patients.push(inc);
+      newCount++;
+    }
+  }
+
+  persistData();
+  return { newCount, updatedCount, total: db.patients.length };
+}
+
+export async function getHisSyncMetadata(): Promise<{
+  lastSyncedAt: string | null;
+  totalWards: number;
+  totalPatients: number;
+  totalBeds: number;
+} | null> {
+  const db = ensureDataFile();
+  return db.hisSyncMeta || null;
+}
+
+export async function updateHisSyncMetadata(meta: {
+  lastSyncedAt: string;
+  totalWards: number;
+  totalPatients: number;
+  totalBeds: number;
+}): Promise<void> {
+  const db = ensureDataFile();
+  db.hisSyncMeta = meta;
+  persistData();
+}
+

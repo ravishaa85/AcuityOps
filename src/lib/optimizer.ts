@@ -1,9 +1,8 @@
 import { Patient, Nurse, CompetencyLevel } from '@/types';
 
-// Competency hierarchy and threshold mapping
-// Acuity Level 4 requires: Expert or Proficient
-// Acuity Level 3 requires: Competent, Proficient, or Expert
-// Acuity Level 1 & 2 requires: Advanced Beginner, Competent, Proficient, or Expert
+// Hospital Standard SIMS Acuity Tool Staffing Rules:
+// "Novice and Limited level staff shall get patients with acuity score 1 & 2 and
+// Patient with acuity score of 3 shall be given to competent / proficient or expert categories of staff."
 const competencyRank: Record<CompetencyLevel, number> = {
   'Expert': 5,
   'Proficient': 4,
@@ -13,10 +12,10 @@ const competencyRank: Record<CompetencyLevel, number> = {
 };
 
 const minCompetencyForAcuity: Record<number, number> = {
-  4: 4, // Proficient or Expert (rank >= 4)
-  3: 3, // Competent, Proficient, Expert (rank >= 3)
-  2: 2, // Advanced Beginner and above (rank >= 2)
-  1: 1  // Novice and above (rank >= 1)
+  4: 3, // Legacy fallback: Competent, Proficient, Expert (rank >= 3)
+  3: 3, // Acuity 3 (Score 25-48): strictly Competent, Proficient, Expert (rank >= 3)
+  2: 1, // Acuity 2 (Score 13-24): Novice & Limited level staff eligible (rank >= 1)
+  1: 1  // Acuity 1 (Score 1-12): Novice & Limited level staff eligible (rank >= 1)
 };
 
 export interface OptimizationResultItem {

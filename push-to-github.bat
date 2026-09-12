@@ -6,3 +6,4 @@ echo.
 "C:\Users\Admin\git\cmd\git.exe" push -u origin main
 echo.
 pause
+

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Search, Building2, AlertTriangle, Users, HeartPulse, ShieldCheck, ChevronRight, Activity } from '@/components/Icons';
+import { Sparkles, Search, Building2, AlertTriangle, Users, HeartPulse, ShieldCheck, ChevronRight, Activity, RefreshCw } from '@/components/Icons';
+
 import { WardSummaryMetric } from '@/types';
 import { RebalanceAnalysisResult } from '@/lib/ai-rebalancing';
 import AiAnalysisModal from '@/components/AiAnalysisModal';
@@ -63,16 +64,43 @@ export default function ExecutiveDashboard() {
           </p>
         </div>
 
-        {/* Action Button: AI Powered Analysis */}
-        <button
-          onClick={() => setIsAiModalOpen(true)}
-          className="btn-primary"
-          style={{ padding: '10px 20px', fontSize: '14px' }}
-        >
-          <Sparkles size={18} />
-          <span>AI Powered Analysis</span>
-        </button>
+        {/* Action Buttons: Sync HIS & AI Powered Analysis */}
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            onClick={async () => {
+              setLoading(true);
+              try {
+                await fetch('/api/his/sync', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ syncWards: true, syncPatients: true })
+                });
+                await fetchData();
+              } catch (e) {
+                console.error(e);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="btn-secondary"
+            style={{ padding: '9px 16px', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
+            title="Synchronize Inpatients and Wards from HIS"
+          >
+            <RefreshCw size={16} />
+            <span>Sync HIS</span>
+          </button>
+
+          <button
+            onClick={() => setIsAiModalOpen(true)}
+            className="btn-primary"
+            style={{ padding: '10px 20px', fontSize: '14px' }}
+          >
+            <Sparkles size={18} />
+            <span>AI Powered Analysis</span>
+          </button>
+        </div>
       </div>
+
 
       {/* KPI Overview Cards (Light Mode) */}
       <div style={{
